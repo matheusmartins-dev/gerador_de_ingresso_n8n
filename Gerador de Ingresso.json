@@ -1,0 +1,285 @@
+{
+  "name": "Gerador de Ingresso",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Gerador de Inscrição",
+        "formDescription": "Inscrição para city tour Florianópolis",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nome",
+              "placeholder": "Informe seu nome",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "placeholder": "Informe seu email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Telefone",
+              "fieldType": "number",
+              "placeholder": "Informe seu telefone",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Enviar"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -624,
+        -176
+      ],
+      "id": "1fd5eabe-d5d8-439d-bef0-401d3c649136",
+      "name": "On form submission",
+      "webhookId": "982b95a5-7daf-4ada-91fc-cde66b38bb14"
+    },
+    {
+      "parameters": {
+        "operation": "addToDate",
+        "magnitude": "={{$now}}",
+        "duration": 7,
+        "outputFieldName": "validade_data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        -176
+      ],
+      "id": "01c43f97-de55-4a2f-8b3a-ad96f83b4f8b",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1a9308b9-4b20-42a9-af3f-d2d0b5ddf0ba",
+              "name": "Nome",
+              "value": "={{ $('On form submission').item.json.Nome }}",
+              "type": "string"
+            },
+            {
+              "id": "9b40da11-3f68-4d37-829c-f74fbaec7edc",
+              "name": "Email",
+              "value": "={{ $('On form submission').item.json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "1b64b5a2-fbcd-4189-80a6-ee2cc300ca96",
+              "name": "Telefone",
+              "value": "={{ $('On form submission').item.json.Telefone }}",
+              "type": "number"
+            },
+            {
+              "id": "b68123f9-abb8-4b23-b1e1-ae63ca13b031",
+              "name": "Data Atual ",
+              "value": "={{$now.format('dd/LL/yyyy')}}",
+              "type": "string"
+            },
+            {
+              "id": "2f7123f1-06e3-4838-892e-d5e73c917d85",
+              "name": "=Validade Data",
+              "value": "={{ $json.validade_data.toDateTime().format('dd/LL/yyyy') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -224,
+        -176
+      ],
+      "id": "a939ef44-25f0-46d4-abb7-f2a3d9b7c08f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "1GleUfQIDljKgy01eiU5GUjPhbVx-vbjH4dDdJM6MHxU",
+          "mode": "list",
+          "cachedResultName": "Proposta+Turismo",
+          "cachedResultUrl": "https://docs.google.com/document/d/1GleUfQIDljKgy01eiU5GUjPhbVx-vbjH4dDdJM6MHxU/edit?usp=drivesdk"
+        },
+        "name": "=Ingresso -  {{ $json.Nome }} - {{ $json['Data Atual '] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -16,
+        -176
+      ],
+      "id": "7f758bce-6b39-4923-bfbb-4db0ab562b5c",
+      "name": "Copy file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "80MEP0UJDdFlvDbD",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "[nome_cliente]",
+              "replaceText": "={{ $('Edit Fields').item.json.Nome }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[email_cliente]",
+              "replaceText": "={{ $('Edit Fields').item.json.Email }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[data_validade]",
+              "replaceText": "={{ $('Edit Fields').item.json['Validade Data'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[data_atual]",
+              "replaceText": "={{ $('Edit Fields').item.json['Data Atual '] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "[telefone_cliente]",
+              "replaceText": "={{ $('Edit Fields').item.json.Telefone.toString() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        192,
+        -176
+      ],
+      "id": "86f2a8de-2351-4780-8daf-3d3b5f8f0f60",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "OV2at1EdPcjmcWBT",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.documentId }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "application/pdf"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        400,
+        -176
+      ],
+      "id": "6f470c0a-21d0-4788-bf74-ff1a4c7915e0",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "80MEP0UJDdFlvDbD",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Copy file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy file": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fec3a782-cc1d-4497-a27e-600f51ee78e8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bf528f21585de78de9c9c5aa2c6caffb614a6c945cd2190ad8634957fb4a586b"
+  },
+  "id": "1szdAhrRfeDcW1X8",
+  "tags": []
+}
